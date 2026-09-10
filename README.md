@@ -387,6 +387,56 @@ para o walkthrough completo com gráficos.
 
 ---
 
+# Versão 3.0 — Robust / Adversarial RL
+
+A V2 escolhe *o melhor* ajuste de ganho quando a observação de estado é
+confiável. A V3 pergunta: **e quando não é?** — ruído de LiDAR, erro de
+encoder, perda de pacote, latência, *sensor spoofing*. O módulo
+`adversarial/` ataca a observação (`s_t^adv = s_t + δ`) e mede/endurece a
+robustez do controle.
+
+## O que foi adicionado
+
+- `adversarial/state_attacks.py` — perturbações sobre a observação:
+  `gaussian_noise` (ruído de sensor), `bias` (offset de calibração),
+  `dropout` (falha de um sensor), `Latency` (observação de k passos atrás)
+  e `spoofing` — perturbação **adversarial** worst-case: dentro de uma bola
+  L-infinito de raio `epsilon`, o `δ` que mais afasta a ação da política da
+  ação nominal (busca, sem gradiente — a política é caixa-preta).
+- `adversarial/robust_eval.py` — `compare(politicas, ataques)`: PID fixo vs.
+  RL+PID vs. Robust RL, **nominal vs. cada ataque**, com métricas de
+  rastreamento: erro médio absoluto, **IAE**, **ITAE**, retorno acumulado e
+  **`perturbation_tolerance`** (maior `epsilon` de spoofing antes do retorno
+  cair abaixo de 70% do nominal).
+- `adversarial/robust_training.py` — `RobustAGVEnv` (drop-in de `AGVEnv` com
+  observação perturbada durante o treino: ruído na maioria dos passos +
+  spoofing adversarial numa fração) + `domain_randomized_finetune` para
+  endurecer o agente V2.
+- `robust_rl_v3.ipynb` — matriz nominal×ataque + curva de degradação sob
+  spoofing.
+- 10 testes (`tests/test_adversarial.py`, políticas baratas, sem MCTS).
+
+## A coluna que faltava na tabela
+
+```text
+               nominal      adversarial
+PID fixo          ✓              ?
+RL + PID (V2)     ✓              ?
+Robust RL (V3)    ✓              ✓
+```
+
+A V3 preenche a coluna da direita — e o `perturbation_tolerance` quantifica
+*quanto* de corrupção cada controlador aguenta antes de degradar.
+
+## Integração com o portfólio
+
+Caso de uso de **adversarial reinforcement learning** da trilha de AI
+Security centralizada no **ThemisAI** (`core/adversarial_ml/`), alimentando
+o *robustness gate* do **Argus**. Ver também VisionGuard (adversarial
+vision), Credit Score (adversarial tabular) e Churn (robustness testing).
+
+---
+
 # Status Final
 
 🟢 **Concluído**
