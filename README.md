@@ -410,11 +410,16 @@ robustez do controle.
   cair abaixo de 70% do nominal).
 - `adversarial/robust_training.py` — `RobustAGVEnv` (drop-in de `AGVEnv` com
   observação perturbada durante o treino: ruído na maioria dos passos +
-  spoofing adversarial numa fração) + `domain_randomized_finetune` para
-  endurecer o agente V2.
-- `robust_rl_v3.ipynb` — matriz nominal×ataque + curva de degradação sob
-  spoofing.
-- 10 testes (`tests/test_adversarial.py`, políticas baratas, sem MCTS).
+  spoofing adversarial numa fração).
+- **`train_robust_v3.py`** — treina a mesma `DualPolicyValueNetwork` da V2
+  por REINFORCE (com baseline da value head) contra o `RobustAGVEnv`, **sem
+  MCTS no loop** (roda em segundos/minutos). `--nominal` gera o baseline
+  treinado no ambiente limpo; sem flag, gera `agent_robust_v3.pt`.
+- **`evaluate_robust_v3.py`** — compara PID fixo · política nominal ·
+  política robusta sob todos os ataques (usa `robust_eval.compare`).
+- `robust_rl_v3.ipynb` — matriz nominal×ataque, curva de degradação sob
+  spoofing e o treino + comparação real das duas políticas.
+- 10 testes (`tests/test_adversarial.py`) + CI (`.github/workflows/ci.yml`).
 
 ## A coluna que faltava na tabela
 
